@@ -8,4 +8,5 @@ import lombok.experimental.Accessors;
 public class MessageDTO {
     private String message;
     private String sender;
+    private String receiver;
 }

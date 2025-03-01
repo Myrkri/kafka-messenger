@@ -6,6 +6,8 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.kafka.config.KafkaListenerEndpointRegistry;
+import org.springframework.kafka.listener.ContainerGroupSequencer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 
 import java.util.HashMap;
@@ -23,5 +25,15 @@ public class KafkaConfig {
 //        config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.appsdeveloperblog.ws.core");
 //        config.put(ConsumerConfig.GROUP_ID_CONFIG, "product-created-events");
         return new KafkaConsumer<>(config, new StringDeserializer(), new JsonDeserializer<>(MessageMetadataDTO.class));
+    }
+
+    @Bean
+    public ContainerGroupSequencer sequencer(KafkaListenerEndpointRegistry registry) {
+        return new ContainerGroupSequencer(registry, 5000, "validators", "notifications");
+    }
+
+    @Bean
+    public KafkaListenerEndpointRegistry kafkaListenerEndpointRegistry() {
+        return new KafkaListenerEndpointRegistry();
     }
 }

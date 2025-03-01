@@ -11,22 +11,31 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 
 import java.time.LocalDateTime;
+import java.util.Map;
 
 @Slf4j
 @Service
 @RequiredArgsConstructor
 public class MessageConsumer {
 
+    private static final Map<String, Integer> MOCK_USER_DB = Map.of("user", 1, "user1", 2, "user2", 3);
+
     private final KafkaTemplate<String, MessageMetadataDTO> kafkaTemplate;
 
-    @KafkaListener(groupId = "validator", topics = "messages")
+    @KafkaListener(groupId = "validator", topics = "messages", containerGroup = "validators")
     public void sort(ConsumerRecord<String, MessageDTO> record) {
         MessageDTO message = record.value();
         validateMessage(message);
         log.info("Message received: {}", message);
         final MessageMetadataDTO metadataDTO = populateMetadata(message);
-        kafkaTemplate.send(message.getSender(), metadataDTO); //TODO: or send to "chat" topic
+        kafkaTemplate.send("chat", MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
         log.info("Message sent to sender: {}", metadataDTO.getSender());
+    }
+
+    @KafkaListener(groupId = "notifications", topics = "messages", containerGroup = "notifications")
+    public void sendNotification(ConsumerRecord<String, MessageDTO> record) {
+        //mocked method
+        log.info("Notification sent");
     }
 
     private static void validateMessage(final MessageDTO message) {
@@ -40,6 +49,7 @@ public class MessageConsumer {
                 .setTimestamp(LocalDateTime.now());
         metadataDTO.setSender(message.getSender());
         metadataDTO.setMessage(message.getMessage());
+        metadataDTO.setReceiver(message.getReceiver());
         log.info("Message metadata populated");
         return metadataDTO;
     }
