@@ -1,6 +1,5 @@
 package com.pet.project.kafkamessenger.config;
 
-import com.pet.project.kafkamessenger.dto.MessageDTO;
 import com.pet.project.kafkamessenger.dto.MessageMetadataDTO;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
@@ -21,8 +20,8 @@ public class KafkaConfig {
         config.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092,localhost:9094");
         config.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         config.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.appsdeveloperblog.ws.core");
-        config.put(ConsumerConfig.GROUP_ID_CONFIG, "product-created-events");
+//        config.put(JsonDeserializer.TRUSTED_PACKAGES, "com.appsdeveloperblog.ws.core");
+//        config.put(ConsumerConfig.GROUP_ID_CONFIG, "product-created-events");
         return new KafkaConsumer<>(config, new StringDeserializer(), new JsonDeserializer<>(MessageMetadataDTO.class));
     }
 }

@@ -19,7 +19,7 @@ public class MessageConsumer {
 
     private final KafkaTemplate<String, MessageMetadataDTO> kafkaTemplate;
 
-    @KafkaListener(groupId = "sorter", topics = "messages")
+    @KafkaListener(groupId = "validator", topics = "messages")
     public void sort(ConsumerRecord<String, MessageDTO> record) {
         MessageDTO message = record.value();
         validateMessage(message);
