@@ -28,7 +28,8 @@ public class MessageConsumer {
         validateMessage(message);
         log.info("Message received: {}", message);
         final MessageMetadataDTO metadataDTO = populateMetadata(message);
-        kafkaTemplate.send("chat", MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
+//        kafkaTemplate.send("chat", MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
+        kafkaTemplate.send("chat", metadataDTO);
         log.info("Message sent to sender: {}", metadataDTO.getSender());
     }
 
@@ -39,7 +40,7 @@ public class MessageConsumer {
     }
 
     private static void validateMessage(final MessageDTO message) {
-        if (StringUtils.hasText(message.getSender()) || StringUtils.hasText(message.getMessage())) {
+        if (!StringUtils.hasText(message.getSender()) || !StringUtils.hasText(message.getMessage())) {
             throw new IllegalArgumentException("Message is not valid");
         }
     }
