@@ -14,7 +14,6 @@ import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -43,13 +42,20 @@ public class MessengerServiceImpl implements MessengerService {
 
     @Override
     public List<MessageMetadataDTO> getMessages(final String receiver) {
-        log.info("Getting messages from receiver: {}", receiver);
-        consumer.subscribe(Collections.singletonList("chat"));
-        ConsumerRecords<String, MessageMetadataDTO> records = consumer.poll(Duration.ofMillis(1000));
+        final String sender = "user"; //TODO temporary
 
-        List<MessageMetadataDTO> messages = new ArrayList<>();
+        log.info("Getting messages from receiver: {}", receiver);
+        consumer.subscribe(List.of("chat"));
+        final ConsumerRecords<String, MessageMetadataDTO> records = consumer.poll(Duration.ofMillis(1000));
+
+        final List<MessageMetadataDTO> messages = new ArrayList<>();
+
         records.records(new TopicPartition("chat", MOCK_USER_DB.get(receiver)))
-                .forEach(record -> messages.add(record.value()));
+                .forEach(record -> {
+                    if (record.key().equals(sender)) {
+                        messages.add(record.value());
+                    }
+                });
 
 //        consumer.commitSync();
 
@@ -57,7 +63,8 @@ public class MessengerServiceImpl implements MessengerService {
     }
 
     private static void validateMessage(final MessageDTO message) {
-        if (!StringUtils.hasText(message.getSender()) || !StringUtils.hasText(message.getMessage())) {
+        if (!StringUtils.hasText(message.getSender()) || !StringUtils.hasText(message.getMessage()) ||
+                !StringUtils.hasText(message.getReceiver())) {
             throw new IllegalArgumentException("Message is not valid");
         }
     }
