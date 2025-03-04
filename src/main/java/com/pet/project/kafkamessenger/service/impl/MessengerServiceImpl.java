@@ -10,6 +10,7 @@ import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 
 import java.time.Duration;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ public class MessengerServiceImpl implements MessengerService {
     Idea is that the user sends a message into the chat room, another user receives notification about it and is able to get it from getMessages api
      */
 
-    private static final Map<String, Integer> MOCK_USER_DB = Map.of("user", 1, "user1", 2, "user2", 3);
+    private static final Map<String, Integer> MOCK_USER_DB = Map.of("user", 0, "user1", 1, "user2", 2);
     private static final String TOPIC = "messages";
 
     private final KafkaTemplate<String, MessageDTO> kafkaTemplate;
@@ -34,6 +35,7 @@ public class MessengerServiceImpl implements MessengerService {
 
     @Override
     public void send(MessageDTO message) {
+        validateMessage(message);
         log.info("Sending message: {}", message);
         kafkaTemplate.send(TOPIC, message);
         log.info("Message sent");
@@ -54,5 +56,10 @@ public class MessengerServiceImpl implements MessengerService {
         return messages;
     }
 
+    private static void validateMessage(final MessageDTO message) {
+        if (!StringUtils.hasText(message.getSender()) || !StringUtils.hasText(message.getMessage())) {
+            throw new IllegalArgumentException("Message is not valid");
+        }
+    }
 
 }
