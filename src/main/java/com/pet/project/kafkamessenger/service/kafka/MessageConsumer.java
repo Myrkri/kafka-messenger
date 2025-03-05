@@ -29,9 +29,9 @@ public class MessageConsumer {
         log.info("Message received: {}", message);
         final MessageMetadataDTO metadataDTO = populateMetadata(message);
         scalePartitions(MOCK_USER_DB.get(metadataDTO.getReceiver()));
-        kafkaTemplate.send(TOPIC, MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO); // Проблема создания партиции
+        kafkaTemplate.send(TOPIC, MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
 //        kafkaTemplate.send(TOPIC, metadataDTO);
-        log.info("Message sent to sender: {}", metadataDTO.getSender());
+        log.info("Message sent by sender: {} to receiver {}", metadataDTO.getSender(), metadataDTO.getReceiver());
     }
 
     @KafkaListener(groupId = "notifications", topics = "messages")
@@ -52,10 +52,9 @@ public class MessageConsumer {
 
     private void scalePartitions(final Integer receiverPartition) {
         final int currentPartitions = KafkaUtil.getPartitionCount(TOPIC);
-//        final int requiredPartitions = currentPartitions + 1;
 
-        if (receiverPartition > currentPartitions) {
-            KafkaUtil.increasePartitions(TOPIC, receiverPartition);
+        if (receiverPartition >= currentPartitions) {
+            KafkaUtil.increasePartitions(TOPIC, receiverPartition + 1);
         }
     }
 
