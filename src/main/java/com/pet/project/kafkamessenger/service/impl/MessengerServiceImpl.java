@@ -62,8 +62,6 @@ public class MessengerServiceImpl implements MessengerService {
                     }
                 });
 
-//        consumer.commitSync();
-
         return messages;
     }
 
