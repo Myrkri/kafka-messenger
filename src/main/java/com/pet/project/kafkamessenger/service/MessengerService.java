@@ -8,5 +8,5 @@ import java.util.List;
 public interface MessengerService {
 
     void send(MessageDTO message);
-    List<MessageMetadataDTO> getMessages(String sender);
+    List<MessageMetadataDTO> getMessages(String sender, String receiver);
 }
