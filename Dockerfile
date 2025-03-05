@@ -1,4 +1,4 @@
-FROM amazoncorretto:17.0.10 as build
+FROM amazoncorretto:17.0.10 AS build
 
 WORKDIR /app
 
