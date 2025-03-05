@@ -22,11 +22,12 @@ public class MessengerController {
         messengerService.send(message);
     }
 
-    @GetMapping(value = "/get/{sender}")
-    public ResponseEntity<List<MessageMetadataDTO>> getMessages(@PathVariable String sender) {
-        if (!StringUtils.hasText(sender)) {
+    @GetMapping(value = "/get")
+    public ResponseEntity<List<MessageMetadataDTO>> getMessages(@RequestParam(name = "sender") String sender,
+                                                                @RequestParam(name = "receiver") String receiver) {
+        if (!StringUtils.hasText(sender) || !StringUtils.hasText(receiver)) {
             return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
         }
-        return ResponseEntity.ok().body(messengerService.getMessages(sender));
+        return ResponseEntity.ok().body(messengerService.getMessages(sender, receiver));
     }
 }
