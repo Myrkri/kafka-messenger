@@ -10,10 +10,9 @@ import java.util.concurrent.ExecutionException;
 
 @Slf4j
 public class KafkaUtil {
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
 
-    public static int getPartitionCount(String topic) {
-        final Properties properties = configToKafkaBroker();
+    public static int getPartitionCount(String topic, String bootstrapServer) {
+        final Properties properties = configToKafkaBroker(bootstrapServer);
 
         try (AdminClient adminClient = AdminClient.create(properties)) {
             final DescribeTopicsResult result = adminClient.describeTopics(List.of(topic));
@@ -26,8 +25,8 @@ public class KafkaUtil {
         }
     }
 
-    public static void increasePartitions(String topic, int newPartitionCount) {
-        final Properties config = configToKafkaBroker();
+    public static void increasePartitions(String topic, int newPartitionCount, String bootstrapServer) {
+        final Properties config = configToKafkaBroker(bootstrapServer);
 
         try (AdminClient adminClient = AdminClient.create(config)) {
             adminClient.createPartitions(
@@ -40,9 +39,9 @@ public class KafkaUtil {
         }
     }
 
-    private static Properties configToKafkaBroker() {
+    private static Properties configToKafkaBroker(String bootstrapServer) {
         final Properties config = new Properties();
-        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        config.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServer);
         return config;
     }
 }

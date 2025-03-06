@@ -6,6 +6,7 @@ import com.pet.project.kafkamessenger.util.KafkaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -22,6 +23,9 @@ public class MessageConsumer {
     private static final String TOPIC = "chat";
 
     private final KafkaTemplate<String, MessageMetadataDTO> kafkaTemplate;
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServer;
 
     @KafkaListener(groupId = "processors", topics = "messages")
     public void appendMetadata(ConsumerRecord<String, MessageDTO> record) {
@@ -50,10 +54,13 @@ public class MessageConsumer {
     }
 
     private void scalePartitions(final Integer receiverPartition) {
-        final int currentPartitions = KafkaUtil.getPartitionCount(TOPIC);
+        log.info("Scaling partitions: {}", receiverPartition);
+        final int currentPartitions = KafkaUtil.getPartitionCount(TOPIC, bootstrapServer);
         if (receiverPartition >= currentPartitions) {
-            KafkaUtil.increasePartitions(TOPIC, receiverPartition + 1);
+            log.info("Scaling partitions from {} to {}", receiverPartition, currentPartitions);
+            KafkaUtil.increasePartitions(TOPIC, receiverPartition + 1, bootstrapServer);
         }
+        log.info("Partitions scaled");
     }
 
 }
