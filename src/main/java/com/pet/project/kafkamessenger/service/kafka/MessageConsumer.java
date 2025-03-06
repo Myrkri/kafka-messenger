@@ -30,7 +30,6 @@ public class MessageConsumer {
         final MessageMetadataDTO metadataDTO = populateMetadata(message);
         scalePartitions(MOCK_USER_DB.get(metadataDTO.getReceiver()));
         kafkaTemplate.send(TOPIC, MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
-//        kafkaTemplate.send(TOPIC, metadataDTO);
         log.info("Message sent by sender: {} to receiver {}", metadataDTO.getSender(), metadataDTO.getReceiver());
     }
 
@@ -52,7 +51,6 @@ public class MessageConsumer {
 
     private void scalePartitions(final Integer receiverPartition) {
         final int currentPartitions = KafkaUtil.getPartitionCount(TOPIC);
-
         if (receiverPartition >= currentPartitions) {
             KafkaUtil.increasePartitions(TOPIC, receiverPartition + 1);
         }

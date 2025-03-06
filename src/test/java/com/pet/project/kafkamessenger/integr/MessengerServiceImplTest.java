@@ -23,8 +23,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 @SpringBootTest
 public class MessengerServiceImplTest {
 
-    private static final String BOOTSTRAP_SERVERS = "localhost:9092";
-
     @Autowired
     private MessengerService messengerService;
 
@@ -35,7 +33,7 @@ public class MessengerServiceImplTest {
     @BeforeEach
     void setUp() {
         final Properties props = new Properties();
-        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, BOOTSTRAP_SERVERS);
+        props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ConsumerConfig.GROUP_ID_CONFIG, "test-group-" + System.currentTimeMillis());
         props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class.getName());
         props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, "org.springframework.kafka.support.serializer.JsonDeserializer");
