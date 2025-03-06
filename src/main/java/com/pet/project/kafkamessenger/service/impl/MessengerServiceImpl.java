@@ -21,10 +21,6 @@ import java.util.Map;
 @RequiredArgsConstructor
 public class MessengerServiceImpl implements MessengerService {
 
-    /*
-    Idea is that the user sends a message into the chat room, another user receives notification about it and is able to get it from getMessages api
-     */
-
     private static final Map<String, Integer> MOCK_USER_DB = Map.of("user", 0, "user1", 1, "user2", 2);
     private static final String TOPIC = "messages";
 
