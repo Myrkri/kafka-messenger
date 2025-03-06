@@ -1,6 +1,7 @@
 package com.pet.project.kafkamessenger.integr;
 
 import com.pet.project.kafkamessenger.dto.MessageDTO;
+import com.pet.project.kafkamessenger.dto.MessageMetadataDTO;
 import com.pet.project.kafkamessenger.service.MessengerService;
 import org.apache.kafka.clients.consumer.Consumer;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
@@ -64,7 +65,26 @@ public class MessengerServiceImplTest {
         consumer.seekToBeginning(consumer.assignment());
         final int finalCount = KafkaTestUtils.getRecords(consumer, Duration.ofSeconds(10)).count();
 
-        assertTrue(finalCount > initialCount, "Final count should be greater than initial count");
+        assertTrue(finalCount > initialCount, "Final count should be greater than initial count : " + finalCount + " > " + initialCount);
     }
 
+
+    @Test
+    void testGetMessagesReturnsNewMessage() throws InterruptedException {
+        final List<MessageMetadataDTO> messagesBefore = messengerService.getMessages("user", "user1");
+        final int initialSize = messagesBefore.size();
+
+        final MessageDTO message = new MessageDTO()
+                .setSender("user")
+                .setReceiver("user1")
+                .setMessage("Test Message");
+        messengerService.send(message);
+
+        Thread.sleep(10000);
+
+        final List<MessageMetadataDTO> messagesAfter = messengerService.getMessages("user", "user1");
+        final int finalSize = messagesAfter.size();
+
+        assertTrue(finalSize > initialSize, "Final size should be greater than initial size : " + finalSize + " > " + initialSize);
+    }
 }
