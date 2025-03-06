@@ -41,7 +41,7 @@ public class MessengerServiceImpl implements MessengerService {
     }
 
     @Override
-    public List<MessageMetadataDTO> getMessages(final String receiver, final String sender) {
+    public List<MessageMetadataDTO> getMessages(final String sender, final String receiver) {
         checkUsers(sender, receiver);
         log.info("Getting messages for receiver: {}", receiver);
         final TopicPartition partition = new TopicPartition("chat", MOCK_USER_DB.get(receiver));
