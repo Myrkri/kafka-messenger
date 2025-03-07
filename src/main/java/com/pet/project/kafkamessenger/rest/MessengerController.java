@@ -4,9 +4,10 @@ import com.pet.project.kafkamessenger.dto.MessageDTO;
 import com.pet.project.kafkamessenger.dto.MessageMetadataDTO;
 import com.pet.project.kafkamessenger.service.MessengerService;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.MediaType;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
-import reactor.core.publisher.Flux;
 
 import java.util.List;
 
@@ -21,8 +22,12 @@ public class MessengerController {
         messengerService.send(message);
     }
 
-    @GetMapping(value = "/get/{sender}")
-    public List<MessageMetadataDTO> getMessages(@PathVariable String sender) {
-        return messengerService.getMessages(sender);
+    @GetMapping(value = "/get")
+    public ResponseEntity<List<MessageMetadataDTO>> getMessages(@RequestParam(name = "sender") String sender,
+                                                                @RequestParam(name = "receiver") String receiver) {
+        if (!StringUtils.hasText(sender) || !StringUtils.hasText(receiver)) {
+            return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+        }
+        return ResponseEntity.ok().body(messengerService.getMessages(sender, receiver));
     }
 }

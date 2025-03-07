@@ -6,7 +6,7 @@ networks:
 
 services:
   kafka:
-    image: 'bitnami/kafka:latest'
+    image: &kafka-image bitnami/kafka:latest
     networks:
       - kafka-network
     environment:
@@ -16,8 +16,25 @@ services:
       - KAFKA_CFG_LISTENER_SECURITY_PROTOCOL_MAP=CONTROLLER:PLAINTEXT,PLAINTEXT:PLAINTEXT
       - KAFKA_CFG_CONTROLLER_QUORUM_VOTERS=0@kafka:9093
       - KAFKA_CFG_CONTROLLER_LISTENER_NAMES=CONTROLLER
-    ports:
-      - "9092:9092"
+      - KAFKA_CFG_AUTO_CREATE_TOPICS_ENABLE=true
+      - KAFKA_CFG_ADVERTISED_LISTENERS=PLAINTEXT://kafka:9092
+      - ALLOW_PLAINTEXT_LISTENER=yes
+    healthcheck:
+      test: [ "CMD", "kafka-topics.sh", "--bootstrap-server=localhost:9092", "--list" ]
+      start_period: 15s
+      interval: 10s
+
+  init-kafka:
+    image: *kafka-image
+    working_dir: /opt/bitnami/kafka/bin
+    entrypoint: /bin/bash
+    networks:
+      - kafka-network
+    depends_on:
+      kafka:
+        condition: service_healthy
+    command: |
+      kafka-topics.sh --create --if-not-exists --topic chat --replication-factor=1 --partitions=1 --bootstrap-server kafka:9092
 
   kafka-app:
     build: .
@@ -27,3 +44,5 @@ services:
       - kafka
     networks:
       - kafka-network
+    environment:
+      - SPRING_KAFKA_BOOTSTRAP_SERVERS=kafka:9092

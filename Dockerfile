@@ -1,16 +1,13 @@
-FROM amazoncorretto:17.0.10 as build
+FROM maven:3.8.6-amazoncorretto-17 AS build
 
 WORKDIR /app
 
-COPY . .
-
-#RUN yum update -y && yum install -y dos2unix && \
-#    dos2unix mvnw && \
-#    chmod +x mvnw
+COPY pom.xml .
+COPY src src
 
 RUN mvn clean package -DskipTests
 
-FROM amazoncorretto:17.0.10
+FROM maven:3.8.6-amazoncorretto-17
 
 COPY --from=build /app/target/*.jar app.jar
 

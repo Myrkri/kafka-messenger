@@ -2,9 +2,11 @@ package com.pet.project.kafkamessenger.service.kafka;
 
 import com.pet.project.kafkamessenger.dto.MessageDTO;
 import com.pet.project.kafkamessenger.dto.MessageMetadataDTO;
+import com.pet.project.kafkamessenger.util.KafkaUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
@@ -18,17 +20,21 @@ import java.util.Map;
 public class MessageConsumer {
 
     private static final Map<String, Integer> MOCK_USER_DB = Map.of("user", 0, "user1", 1, "user2", 2);
+    private static final String TOPIC = "chat";
 
     private final KafkaTemplate<String, MessageMetadataDTO> kafkaTemplate;
+
+    @Value("${spring.kafka.bootstrap-servers}")
+    private String bootstrapServer;
 
     @KafkaListener(groupId = "processors", topics = "messages")
     public void appendMetadata(ConsumerRecord<String, MessageDTO> record) {
         MessageDTO message = record.value();
         log.info("Message received: {}", message);
         final MessageMetadataDTO metadataDTO = populateMetadata(message);
-//        kafkaTemplate.send("chat", MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO); // Проблема создания партиции
-        kafkaTemplate.send("chat", metadataDTO);
-        log.info("Message sent to sender: {}", metadataDTO.getSender());
+        scalePartitions(MOCK_USER_DB.get(metadataDTO.getReceiver()));
+        kafkaTemplate.send(TOPIC, MOCK_USER_DB.get(metadataDTO.getReceiver()), metadataDTO.getSender(), metadataDTO);
+        log.info("Message sent by sender: {} to receiver {}", metadataDTO.getSender(), metadataDTO.getReceiver());
     }
 
     @KafkaListener(groupId = "notifications", topics = "messages")
@@ -45,6 +51,16 @@ public class MessageConsumer {
         metadataDTO.setReceiver(message.getReceiver());
         log.info("Message metadata populated");
         return metadataDTO;
+    }
+
+    private void scalePartitions(final Integer receiverPartition) {
+        log.info("Scaling partitions: {}", receiverPartition);
+        final int currentPartitions = KafkaUtil.getPartitionCount(TOPIC, bootstrapServer);
+        if (receiverPartition >= currentPartitions) {
+            log.info("Scaling partitions from {} to {}", receiverPartition, currentPartitions);
+            KafkaUtil.increasePartitions(TOPIC, receiverPartition + 1, bootstrapServer);
+        }
+        log.info("Partitions scaled");
     }
 
 }
